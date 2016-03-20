@@ -1,6 +1,7 @@
 package ikm;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.*;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -12,17 +13,25 @@ class Main extends JFrame{
   public Main(){
     setSize(new Dimension(640,480));
     initCamera();
-    displayImage(getImage());
+    ActionListener timed = new ActionListener(){
+      public void actionPerformed(ActionEvent e){
+        displayImage(getImage());
+      }
+    };
+    t = new Timer((int)(1.0/fps*1000),timed);
+    t.start();
   }
 
+  int fps = 30;
   Image img;
+  Timer t;
 
   VideoCapture camera;
   public void initCamera(){
     System.out.println(System.getProperty("java.library.path"));
     System.loadLibrary("opencv_java2412");
     camera = new VideoCapture(0);
-    camera.open(0); //Useless
+    camera.open(0);
     try{
     Thread.sleep(1000);
     } catch(Exception e) {
@@ -39,19 +48,17 @@ class Main extends JFrame{
     Mat frame = new Mat();
 
     camera.read(frame);
-    System.out.println("Frame Obtained");
 
-    System.out.println("Captured Frame Width " + frame.width());
     return frame;
   }
 
   public void displayImage(Mat mat){
     img = toBufferedImage(mat);
+    repaint();
   }
 
   public void paint(Graphics g){
     super.paint(g);
-    System.out.println("redraw");
     if(img!=null){
       g.drawImage(img, 0, 0, this);
     } else {
